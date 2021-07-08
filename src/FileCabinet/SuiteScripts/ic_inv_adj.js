@@ -37,7 +37,7 @@ define(['N/record', 'N/query', 'N/search'],
             } = requestBody;
 
             let recordId;
-            let reasonCodeAcct = getReasonCodeAcct(reasonCode);
+            let reasonCodeAcct = getReasonCodeAcctId(reasonCode);
             let reasonCodeId = getReasonCodeId(reasonCode);
             let departmentId = getIdFromName(departmentName, departmentType);
             let subsidiaryId = getIdFromName(subsidiaryName, subsidiaryType);
@@ -123,7 +123,7 @@ define(['N/record', 'N/query', 'N/search'],
 
         }
 
-        const getReasonCodeAcct = (reasonCode) => {
+        const getReasonCodeAcctId = (reasonCode) => {
 
             let reasonCodes = search.create({
                 type: 'CUSTOMRECORD_IC_INV_ADJ_REASON_CODE',
@@ -174,7 +174,7 @@ define(['N/record', 'N/query', 'N/search'],
 
             let idFromNameSearch = search.create({
                 type: recordType,
-                columns: [ {
+                columns: [{
                     name: 'name'
                 }],
                 filters: [{
