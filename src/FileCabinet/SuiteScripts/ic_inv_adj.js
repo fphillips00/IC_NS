@@ -20,174 +20,186 @@ define(['N/record', 'N/query', 'N/search'],
          */
         const post = (requestBody) => {
             let {
-                DEPARTMENT: departmentType,
-                ITEM: itemType,
-                SUBSIDIARY: subsidiaryType,
-                LOCATION: locationType
+                DEPARTMENT      : departmentType,
+                ITEM            : itemType,
+                SUBSIDIARY      : subsidiaryType,
+                LOCATION        : locationType
             } = search.Type;
 
             let {
                 reasonCode,
-                department: departmentName,
-                subsidiary: subsidiaryName,
-                trandate,
-                item: itemName,
-                location: locationName,
+                department      : departmentName,
+                subsidiary      : subsidiaryName,
+                tranDate,
+                item            : itemName,
+                location        : locationName,
                 adjustQtyBy
             } = requestBody;
 
             let recordId;
-            let reasonCodeAcct = getReasonCodeAcctId(reasonCode);
-            let reasonCodeId = getReasonCodeId(reasonCode);
-            let departmentId = getIdFromName(departmentName, departmentType);
-            let subsidiaryId = getIdFromName(subsidiaryName, subsidiaryType);
-            let locationId = getIdFromName(locationName, locationType);
-            let itemId = getIdFromName(itemName, itemType);
+            let reasonCodeAcctId= getReasonCodeAcctId(reasonCode);
+            let reasonCodeId    = getReasonCodeId(reasonCode);
+            let departmentId    = getIdFromName(departmentName, departmentType);
+            let subsidiaryId    = getIdFromName(subsidiaryName, subsidiaryType);
+            let locationId      = getIdFromName(locationName, locationType);
+            let itemId          = getIdFromName(itemName, itemType);
 
 
             try {
                 const objRecord = record.create({
-                    type: record.Type.INVENTORY_ADJUSTMENT,
-                    isDynamic: true
+                    type        : record.Type.INVENTORY_ADJUSTMENT,
+                    isDynamic   : true
                 });
 
                 objRecord.setValue({
-                    fieldId: 'subsidiary',
-                    value: subsidiaryId
+                    fieldId     : 'subsidiary',
+                    value       : subsidiaryId
                 });
 
                 objRecord.setValue({
-                    fieldId: 'custbody_ic_adjustment_reason_code',
-                    value: reasonCodeId
+                    fieldId     : 'custbody_ic_adjustment_reason_code',
+                    value       : reasonCodeId
                 });
 
                 objRecord.setValue({
-                    fieldId: 'account',
-                    value: reasonCodeAcct
+                    fieldId     : 'account',
+                    value       : reasonCodeAcctId
                 });
 
                 objRecord.setValue({
-                    fieldId: 'trandate',
-                    value: new Date(trandate)
+                    fieldId     : 'trandate',
+                    value       : new Date(tranDate)
                 });
 
                 objRecord.selectNewLine({
-                    sublistId: 'inventory'
+                    sublistId   : 'inventory'
                 });
 
                 objRecord.setCurrentSublistValue({
-                    sublistId: 'inventory',
-                    fieldId: 'item',
-                    value: itemId
+                    sublistId   : 'inventory',
+                    fieldId     : 'item',
+                    value       : itemId
                 });
 
                 objRecord.setCurrentSublistValue({
-                    sublistId: 'inventory',
-                    fieldId: 'location',
-                    value: locationId
+                    sublistId   : 'inventory',
+                    fieldId     : 'location',
+                    value       : locationId
                 });
 
                 objRecord.setCurrentSublistValue({
-                    sublistId: 'inventory',
-                    fieldId: 'adjustqtyby',
-                    value: adjustQtyBy
+                    sublistId   : 'inventory',
+                    fieldId     : 'adjustqtyby',
+                    value       : adjustQtyBy
                 });
 
                 objRecord.setCurrentSublistValue({
-                    sublistId: 'inventory',
-                    fieldId: 'department',
-                    value: departmentId
+                    sublistId   : 'inventory',
+                    fieldId     : 'department',
+                    value       : departmentId
                 });
 
                 objRecord.commitLine({
-                    sublistId: 'inventory'
+                    sublistId   : 'inventory'
                 });
 
-                recordId = objRecord.save({
-                    enableSourcing: false,
-                    ignoreMandatoryFields: false
+                recordId        = objRecord.save({
+                    enableSourcing          : false,
+                    ignoreMandatoryFields   : false
                 });
 
             } catch (err) {
-                log.debug({title: err.title, details: err.message})
+                log.debug({
+                    title       : err.title,
+                    details     : err.message
+                });
                 return JSON.stringify({
-                    status: 'failed',
-                    message: err.message
+                    status      : 'failed',
+                    message     : err.message
                 });
             }
 
             return JSON.stringify({
-                status: 'successful',
-                message: recordId
+                status          : 'successful',
+                message         : recordId
             });
 
         }
 
         const getReasonCodeAcctId = (reasonCode) => {
 
-            let reasonCodes = search.create({
-                type: 'CUSTOMRECORD_IC_INV_ADJ_REASON_CODE',
+            let reasonCodes     = search.create({
+                type            : 'CUSTOMRECORD_IC_INV_ADJ_REASON_CODE',
                 columns: [{
-                    name: 'custrecord_ic_inv_adj_account'
+                    name        : 'custrecord_ic_inv_adj_account'
                 }, {
-                    name: 'name'
+                    name        : 'name'
                 }]
                 ,
                 filters: [{
-                    name: 'name',
-                    operator: 'is',
-                    values: [reasonCode]
+                    name        : 'name',
+                    operator    : 'is',
+                    values      : [reasonCode]
                 }]
             });
 
 
-            let resultSet = reasonCodes.run().getRange({start: 0, end: 1});
+            let resultSet       = reasonCodes.run()
+                .getRange({
+                    start       : 0,
+                    end         : 1
+                });
 
             return resultSet[0].getValue({
-                name: 'custrecord_ic_inv_adj_account'
+                name            : 'custrecord_ic_inv_adj_account'
             });
         }
 
-        const getReasonCodeId = (reasonCode) => {
+        const getReasonCodeId   = (reasonCode) => {
 
-            let reasonCodes = query.create({
-                type: 'CUSTOMRECORD_IC_INV_ADJ_REASON_CODE'
+            let reasonCodes     = query.create({
+                type            : 'CUSTOMRECORD_IC_INV_ADJ_REASON_CODE'
             });
 
             reasonCodes.columns = [
                 reasonCodes.createColumn({
-                    fieldId: 'id'
+                    fieldId     : 'id'
                 })
             ]
 
             reasonCodes.condition = reasonCodes.createCondition({
-                fieldId: 'name',
-                operator: query.Operator.IS,
-                values: reasonCode
+                fieldId         : 'name',
+                operator        : query.Operator.IS,
+                values          : reasonCode
             });
 
-            let resultSet = reasonCodes.run();
-            return resultSet.results[0].values[0];
+            let resultSet       = reasonCodes.run();
+            return resultSet
+                .results[0]
+                .values[0];
         }
 
-        const getIdFromName = (name, recordType) => {
+        const getIdFromName     = (name, recordType) => {
 
-            let idFromNameSearch = search.create({
-                type: recordType,
-                columns: [{
-                    name: 'name'
+            let idFromNameSch   = search.create({
+                type            : recordType,
+                columns         : [{
+                    name        : 'name'
                 }],
-                filters: [{
-                    name: 'name',
-                    operator: 'is',
-                    values: [name]
+                filters         : [{
+                    name        : 'name',
+                    operator    : 'is',
+                    values      : [name]
                 }]
             });
 
-            let resultSet = idFromNameSearch.run().getRange({start: 0, end: 1});
+            let resultSet       = idFromNameSch.run()
+                .getRange({
+                    start       : 0,
+                    end         : 1
+                });
 
             return resultSet[0].id
-
         }
 
         return {post}
